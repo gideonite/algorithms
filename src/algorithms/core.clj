@@ -1,5 +1,6 @@
 (ns algorithms.core
-  (:require [clojure.math.numeric-tower :as math]))
+  (:require [clojure.math.numeric-tower :as math]
+            [clojure.data.priority-map :as priority-map]))
 
 (def maze [[0 0 0 0 0 0 0 0]
            [0 0 0 0 0 0 0 0]
@@ -32,16 +33,13 @@
 
 (get-neighbors maze [0 0])
 
+(defn get-viable-neighbors [maze coor]
+  (->> (get-neighbors maze coor)
+    (filter #(second %))            ;; nil (falsey) value when you are off the board
+    (filter #(not= 1 (second %))))) ;; 1s are blocked
+
 (defn manhattan-distance [[x1 y1] [x2 y2]]
   (math/abs (+ (- x1 x2) (- y1 y2))))
 
-(defn closest [h neighbors-map]
-
-  )
-
-(defn a-star [maze [start1 start2] [end1 end2]]
-  (when-let [:g 0
-             :neighbors (get-neighbors [start1 start2])
-             ])
-  (closest (get-neighbors [start1 start2]))
+(defn a-star [g path open-set maze end]
   )
