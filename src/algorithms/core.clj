@@ -1,5 +1,5 @@
 (ns algorithms.core
-  (:use clojure.data.priority-map)
+  (:use clojure.data.priority-map)    ;; TODO why not :require?
   (:require [clojure.math.numeric-tower :as math]))
 
 (def maze [[0 0 0 0 0 0 0 0]
@@ -78,7 +78,7 @@
                 (conj open-set neighbor))))))))
   "fail")
 
-(a-star [0 0] [5 5] maze manhattan-distance)
+;(a-star [0 0] [5 5] maze manhattan-distance)
 
 
 (defn a-star2 [start end maze heuristic]
@@ -89,29 +89,30 @@
         f-score {}
         f-queue (priority-map start (heuristic start end))]
 
-    ;; need to initialize all the variables in this `let`
+    ;; TODO need to initialize all the variables in this `let`
 
     (loop [closed-set open-set came-from g-score f-score f-queue]
       (when (seq open-set)
-        (let [current (peak f-queue)
-              curr-open-set   (disj open-set current)
-              curr-closed-set (conj closed-set current)]
+        (let [current (peek f-queue)
+              current-open-set   (disj open-set current)
+              current-closed-set (conj closed-set current)]
+
+          (if (= current end) "whoho!  let's reconstruct a path from came-from")
+
           (for [neighbor (get-viable-neighbors maze current)
                 ;; assuming that the heuristic function *is* the distance metric
                 tentative-gscore [(+ (g-score current) (heuristic current neighbor))]
                 tentative-fscore [(+ tentative-gscore (heuristic current end))]]
-            (if-not (and (contains? closed-set neighbor)
+            (if-not (and (contains? closed-set neighbor)    ;; no continue syntax?
                          (>= tentative-fscore (f-score neighbor)))
               (if (or (not-in open-set neighbor)
                       (< tentative-fscore (f-score neighbor)))
-                (do
+
+                (recur
+                  current-closed-set
+                  ;; els of sets are unique, conj away!
+                  (conj current-open-set neighbor)
                   (assoc came-from neighbor current)
                   (assoc g-score neighbor tentative-gscore)
-                  (assoc f-score neighbor tentative-fscore)
-                  (conj open-set neighbor)))))
-          )
-        )
-      )
-    )
-  "fail"
-  )
+                  (assoc f-score neighbor tentative-fscore)))))))))
+  "fail")
