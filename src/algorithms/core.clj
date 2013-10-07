@@ -1,6 +1,7 @@
 (ns algorithms.core
+  (:use clojure.data.priority-map)
   (:require [clojure.math.numeric-tower :as math]
-            [clojure.data.priority-map :as priority-map]))
+            ))
 
 (def maze [[0 0 0 0 0 0 0 0]
            [0 0 0 0 0 0 0 0]
@@ -41,5 +42,36 @@
 (defn manhattan-distance [[x1 y1] [x2 y2]]
   (math/abs (+ (- x1 x2) (- y1 y2))))
 
-(defn a-star [g path open-set maze end]
-  )
+(def not-in (complement contains?))
+
+(defn a-star [start end maze heuristic]
+  (let [closed-set #{}
+        open-set #{start}
+        came-from {}
+        g-score {}
+        f-score {}
+        f-queue (priority-map start (heuristic start end))]
+    (assoc g-score start 0)
+    (assoc f-score start (+ (g-score start) (heuristic start end)))
+
+    (while (seq open-set)
+      (let [current (peek f-queue)]
+        (if (= current end) :horrah)
+
+        (disj open-set current)
+        (conj closed-set current)
+
+        (for [neighbor (get-viable-neighbors maze current)
+              ;; assuming that the heuristic function *is* the distance metric
+              tentative-gscore [(+ (g-score current) (heuristic current neighbor))]
+              tentative-fscore [(+ tentative-gscore (heuristic current end))]]
+          (if-not (and (contains? closed-set neighbor)
+                   (>= tentative-fscore (f-score neighbor)))
+            (if (or (not-in open-set neighbor)
+                    (< tentative-fscore (f-score neighbor)))
+              (do
+                (assoc came-from neighbor current)
+                (assoc g-score neighbor tentative-gscore)
+                (assoc f-score neighbor tentative-fscore)
+                (conj open-set neighbor))))))))
+  "fail")
