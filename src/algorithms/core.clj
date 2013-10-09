@@ -2,16 +2,17 @@
   (:use clojure.data.priority-map)    ;; TODO why not :require?
   (:require [clojure.math.numeric-tower :as math]))
 
-(defn get-coordinate-value [maze [x y]]
+(defn get-coordinate-value
   "maze [x y] -> (value at [x y]) or nil"
+  [maze [x y]]
   (let [h (count maze)
         w (count (first maze))]
-  (if
-    (or (< x 0) (< y 0) (>= x w) (>= y h)) nil
-    (nth (nth maze y) x))))
+    (when (and (<= 0 x (dec w)) (<= 0 y (dec h)))
+      (nth (nth maze y) x))))
 
-(defn get-neighbors [maze [x y]]
+(defn get-neighbors
   "maze x-coordinate y-coordinate -> {coordinates (value at tuple)}"
+  [maze [x y]]
   (let [left   [(dec x) y]
         right  [(inc x) y]
         up     [x (inc y)]
@@ -21,11 +22,11 @@
      up     (get-coordinate-value maze up)
      down   (get-coordinate-value maze down)}))
 
-(defn get-viable-neighbors [maze coor]
+(defn get-viable-neighbors
   "returns the neighbors of the coordinate that are traversable
   (i.e. not blocked)"
+  [maze coor]
   (->> (get-neighbors maze coor)
-    (filter #(second %))            ;; nil (falsey) value when you are off the board
     (filter #(not= 1 (second %)))   ;; 1s are blocked
     (map first)))
 
@@ -63,12 +64,14 @@
                    (into came-from (for [[n] neighbors] [n current]))
                    (into (pop f-queue) neighbors))))))))
 
-(defn place-X [maze [x y]]
+(defn place-X
   "places the char \\X at the coordinates [x y]"
+  [maze [x y]]
   (assoc maze y (assoc (maze y) x \X)))
 
-(defn visualize [maze path]
+(defn visualize
   "print the path overlayed on the maze to stdout"
+  [maze path]
   (print " ")
   (apply println
          (interleave
@@ -76,8 +79,9 @@
                 (reduce #(place-X %1 %2) (place-X maze (first path)) path))
            (repeat "\n"))))
 
-(defn run-a-star [start end maze metric]
+(defn run-a-star
   "runs the algorithm and visualizes the output to stdout"
+  [start end maze metric]
   (visualize maze (a-star start end maze manhattan-distance)))
 
 (run-a-star [0 0] [3 3]
