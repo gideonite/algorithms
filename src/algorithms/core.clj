@@ -85,10 +85,10 @@
   (visualize maze (a-star start end maze manhattan-distance)))
 
 (run-a-star [0 0] [3 3]
-            [[0 0 0 0]
-             [0 1 0 0]
-             [0 0 1 0]
-             [0 0 1 0]]
+            [[" " " " " " " "]
+             [" " 1 " " " "]
+             [" " " " 1 " "]
+             [" " " " 1 " "]]
             manhattan-distance)
 
 ;; --- Trash ---
