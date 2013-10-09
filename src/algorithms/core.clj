@@ -30,10 +30,12 @@
     (filter #(not= 1 (second %)))   ;; 1s are blocked
     (map first)))
 
-(defn manhattan-distance [[x1 y1] [x2 y2]]
+(defn manhattan-distance
+  [[x1 y1] [x2 y2]]
   (math/abs (+ (- x1 x2) (- y1 y2))))
 
-(defn construct-path [came-from end]
+(defn construct-path
+  [came-from end]
   (take-while identity                  ; stopping condition, (identity nil) -> nil -> falsy
               (conj                     ; include end in the path
                 (iterate came-from end) ; apply came-from like an exponent, (came-from ... (came-from (came-from end)))
@@ -42,7 +44,8 @@
 ;; Inspiration: http://clj-me.cgrand.net/2010/09/04/a-in-clojure/
 ;; Thanks Christophe Grand!
 
-(defn a-star [start end maze metric]
+(defn a-star
+  [start end maze metric]
   (let [heuristic #(metric % end)]
     (loop [closed-set #{}
            came-from  {}
@@ -95,7 +98,8 @@
 
 (def not-in (complement contains?))
 
-(defn a-star-pseudo [start end maze heuristic]
+(defn a-star-pseudo
+  [start end maze heuristic]
   (let [closed-set #{}
         open-set #{start}
         came-from {}
