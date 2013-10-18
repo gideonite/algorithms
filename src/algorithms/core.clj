@@ -1,6 +1,6 @@
 (ns algorithms.core
-  (:use clojure.data.priority-map)    ;; TODO why not :require?
-  (:require [clojure.math.numeric-tower :as math]))
+  (:require [clojure.math.numeric-tower :as math]
+            [clojure.data.priority-map :refer :all]))
 
 (defn get-coordinate-value
   "maze [x y] -> (value at [x y]) or nil"
@@ -25,7 +25,7 @@
 (defn get-viable-neighbors
   "returns the neighbors of the coordinate that are traversable
   (i.e. not blocked)"
-  [maze coor]
+  [maze coor wall]
   (->> (get-neighbors maze coor)
     (filter #(not= 1 (second %)))   ;; 1s are blocked
     (map first)))
@@ -45,7 +45,7 @@
 ;; Thanks Christophe Grand!
 
 (defn a-star
-  [start end maze metric]
+  [start end maze metric wall]
   (let [heuristic #(metric % end)]
     (loop [closed-set #{}
            came-from  {}
@@ -53,7 +53,7 @@
       (when-let [[current f-current] (peek f-queue)]
         (if (= current end)
           (construct-path came-from end)
-          (let [neighbors (for [n (remove closed-set (get-viable-neighbors maze current))
+          (let [neighbors (for [n (remove closed-set (get-viable-neighbors maze current wall))
                                 ;; filter the viable neighbors down to the ones that are:
                                 ;;    * not in the closed set
                                 ;;    * found to have a lower cost (g-score)
@@ -85,9 +85,9 @@
 (defn run-a-star
   "runs the algorithm and visualizes the output to stdout"
   [start end maze metric]
-  (visualize maze (a-star start end maze manhattan-distance)))
+  (visualize maze (a-star start end maze manhattan-distance 1)))
 
-(run-a-star [0 0] [3 3]
+(run-a-star [0 0] [0 0]
             [[" " " " " " " "]
              [" " 1 " " " "]
              [" " " " 1 " "]
@@ -96,37 +96,39 @@
 
 ;; --- Trash ---
 
-(def not-in (complement contains?))
+(comment
+  (def not-in (complement contains?))
 
-(defn a-star-pseudo
-  [start end maze heuristic]
-  (let [closed-set #{}
-        open-set #{start}
-        came-from {}
-        g-score {}
-        f-score {}
-        f-queue (priority-map start (heuristic start end))]
-    (assoc g-score start 0)
-    (assoc f-score start (+ (g-score start) (heuristic start end)))
+  (defn a-star-pseudo
+    [start end maze heuristic]
+    (let [closed-set #{}
+          open-set #{start}
+          came-from {}
+          g-score {}
+          f-score {}
+          f-queue (priority-map start (heuristic start end))]
+      (assoc g-score start 0)
+      (assoc f-score start (+ (g-score start) (heuristic start end)))
 
-    (while (seq open-set)
-      (let [current (peek f-queue)]
-        (if (= current end) :horrah)
+      (while (seq open-set)
+        (let [current (peek f-queue)]
+          (if (= current end) :horrah)
 
-        (disj open-set current)
-        (conj closed-set current)
+          (disj open-set current)
+          (conj closed-set current)
 
-        (for [neighbor (get-viable-neighbors maze current)
-              ;; assuming that the heuristic function *is* the distance metric
-              tentative-gscore [(+ (g-score current) (heuristic current neighbor))]
-              tentative-fscore [(+ tentative-gscore (heuristic current end))]]
-          (if-not (and (contains? closed-set neighbor)
-                   (>= tentative-fscore (f-score neighbor)))
-            (if (or (not-in open-set neighbor)
-                    (< tentative-fscore (f-score neighbor)))
-              (do
-                (assoc came-from neighbor current)
-                (assoc g-score neighbor tentative-gscore)
-                (assoc f-score neighbor tentative-fscore)
-                (conj open-set neighbor))))))))
-  "fail")
+          (for [neighbor (get-viable-neighbors maze current)
+                ;; assuming that the heuristic function *is* the distance metric
+                tentative-gscore [(+ (g-score current) (heuristic current neighbor))]
+                tentative-fscore [(+ tentative-gscore (heuristic current end))]]
+            (if-not (and (contains? closed-set neighbor)
+                         (>= tentative-fscore (f-score neighbor)))
+              (if (or (not-in open-set neighbor)
+                      (< tentative-fscore (f-score neighbor)))
+                (do
+                  (assoc came-from neighbor current)
+                  (assoc g-score neighbor tentative-gscore)
+                  (assoc f-score neighbor tentative-fscore)
+                  (conj open-set neighbor))))))))
+    "fail")
+  )
