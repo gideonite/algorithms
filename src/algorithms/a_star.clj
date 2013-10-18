@@ -1,4 +1,4 @@
-(ns algorithms.core
+(ns algorithms.a_star
   (:require [clojure.math.numeric-tower :as math]
             [clojure.data.priority-map :refer :all]))
 
