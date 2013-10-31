@@ -112,6 +112,25 @@
              (partition size (repeatedly (* size size)
                                          random-maze-value)))))
 
+(defn animate
+  [start end maze metric wall]
+  (let [path (reverse (a-star
+                        start end
+                        maze
+                        metric wall))
+        paths (map #(take % path) (rest ;; the first one is ()
+                                    (range (count path))))]
+    (doseq [p paths]
+      (visualize maze p)
+      (Thread/sleep 500))))
+
+(defn -main [& args]
+  (animate [0 0] [3 3]
+           [[" " " " " " " "]
+            [" " 1 " " " "]
+            [" " " " 1 " "]
+            [" " " " 1 " "]]
+           manhattan-distance "1"))
 ;; --- Trash ---
 
 (comment
