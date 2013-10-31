@@ -83,16 +83,34 @@
            (repeat "\n"))))
 
 (defn run-a-star
-  "runs the algorithm and visualizes the output to stdout"
+  "runs the algorithm and printing the path to stdout"
   [start end maze metric]
   (visualize maze (a-star start end maze manhattan-distance 1)))
 
-(run-a-star [0 0] [0 0]
-            [[" " " " " " " "]
-             [" " 1 " " " "]
-             [" " " " 1 " "]
-             [" " " " 1 " "]]
-            manhattan-distance)
+(comment
+  (run-a-star [0 0] [0 0]
+              [[" " " " " " " "]
+               [" " 1 " " " "]
+               [" " " " 1 " "]
+               [" " " " 1 " "]]
+              manhattan-distance))
+
+;;
+;; random maze
+;;
+
+(defn random-maze-value
+  []
+  (let [v (rand-int 2)]
+    (if (= 0 v) " " v)))
+
+(defn random-square-maze
+  "makes a random square maze"
+  [size]
+  (into []
+        (map #(into [] %)
+             (partition size (repeatedly (* size size)
+                                         random-maze-value)))))
 
 ;; --- Trash ---
 
