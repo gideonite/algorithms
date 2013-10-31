@@ -72,6 +72,9 @@
   [maze [x y]]
   (assoc maze y (assoc (maze y) x \X)))
 
+;; TODO: refactor place-X to place anything, use this to create a nontrivial
+;; and large maze.  Animate it.
+
 (defn visualize
   "print the path overlayed on the maze to stdout"
   [maze path]
@@ -125,12 +128,11 @@
       (Thread/sleep 500))))
 
 (defn -main [& args]
-  (animate [0 0] [3 3]
-           [[" " " " " " " "]
-            [" " 1 " " " "]
-            [" " " " 1 " "]
-            [" " " " 1 " "]]
+  (animate [0 0] [30 30]
+           (into [] (map #(into [] %) (partition 87 (repeat (* 87 47) " "))))
            manhattan-distance "1"))
+
+
 ;; --- Trash ---
 
 (comment
