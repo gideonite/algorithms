@@ -42,7 +42,7 @@
    12 [9]})
 
 (defn find-path
-  "Finds a path (any path) from the start to the end in the graph.  Returns nil
+  "Finds a path (any path) from the start to the end in the graph. Returns nil
   if there is no path."
   [start end graph]
   (loop [path [start]
