@@ -62,36 +62,25 @@
   (find-path 1 -1 test-graph1))
 
 (defn find-shortest-path
+  "Finds the shortest path between the start and the end. Breadth-first search
+  which halts when it finds the end. If no end is found, returns nil."
   [start end graph]
   (loop [path-queue [[start]]
          visited #{}
          graph graph]
-
-    (if (empty? path-queue)
-      nil
-      (let [curr-path (first path-queue)
-            curr-node (first curr-path)
+    (when-let [curr-path (first path-queue)]
+      (let [curr-node (first curr-path)
             adjs (filter (comp not visited) (graph curr-node))]
-
         (if (= end curr-node)
           (reverse curr-path)
-          (if (empty? adjs)
-            (recur (subvec path-queue 1)
-                   visited
-                   graph)
-            (recur (apply conj (subvec path-queue 1)
-                          (map #(cons % curr-path) adjs))
-                   (conj visited curr-node)
-                   graph)))))))
-
-;;  1----2----3    11
-;;  |    |         |
-;;  4    5----6----10
-;;  |    |    |
-;;  7    8    9----12
+          (let [subq (subvec path-queue 1)]
+            (if (empty? adjs)
+              (recur subq visited graph)
+              (recur (apply conj subq (map #(cons % curr-path) adjs))
+                     (conj visited curr-node)
+                     graph))))))))
 
 (comment
   (find-shortest-path 1 10 test-graph1)
   (find-shortest-path 1 2 test-graph1)
-  (find-shortest-path 1 -1 test-graph1)
-  )
+  (find-shortest-path 1 -1 test-graph1))
