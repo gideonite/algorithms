@@ -80,6 +80,44 @@
                      (conj visited curr-node)
                      graph))))))))
 
+;; http://gist.io/7375570
+
+(defprotocol IStore
+  (store-rest [store])
+  (store-peek [store])
+  (store-conj [store value]))
+
+(defrecord StackStore [list]
+  IStore
+  (store-rest [store] (->StackStore (rest (:list store))))
+  (store-peek [store] (peek (:list store)))
+  (store-conj [store value] (->StackStore (conj (:list store) value))))
+
+(defn stack
+  [& vs]
+  (->StackStore vs))
+
+(defn print-graph
+  "A graph is a map of vertex, i.e. an int to a (list of vertices). The store
+  implements IStore."
+  [graph store]
+  (loop [visited #{}
+         store (store-conj store (key (first graph)))]
+
+    (if-let [curr (first (filter (comp not visited)
+                                   (graph (store-peek store))))]
+      (recur (conj visited curr)
+             (store-conj store curr))
+      store)))
+
+(comment
+  (print-graph test-graph1 (stack))
+
+  )
+
+
+
+
 (comment
   (find-shortest-path 1 10 test-graph1)
   (find-shortest-path 1 2 test-graph1)
