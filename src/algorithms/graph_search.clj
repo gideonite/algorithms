@@ -85,34 +85,36 @@
 (defprotocol IStore
   (store-rest [store])
   (store-peek [store])
-  (store-conj [store value]))
+  (store-conj [store & values]))
 
 (defrecord StackStore [list]
   IStore
   (store-rest [store] (->StackStore (rest (:list store))))
   (store-peek [store] (peek (:list store)))
-  (store-conj [store value] (->StackStore (conj (:list store) value))))
+  (store-conj [store & values] (->StackStore (apply conj (:list store) values))))
 
 (defn stack
   [& vs]
   (->StackStore vs))
 
 (defn print-graph
-  "A graph is a map of vertex, i.e. an int to a (list of vertices). The store
+  "A graph is a map of vertices, i.e. an int to a (list of vertices). The store
   implements IStore."
   [graph store]
-  (loop [visited #{}
+  (loop [vs '()
          store (store-conj store (key (first graph)))]
-
-    (if-let [curr (first (filter (comp not visited)
-                                   (graph (store-peek store))))]
-      (recur (conj visited curr)
-             (store-conj store curr))
-      store)))
+    (let [curr (store-peek store)
+          neighbors (graph curr)
+          new-neighbors (filter (fn [n] (not (some #{n} (:list store)))) neighbors)]
+      (println curr)
+      (if (not (empty? neighbors))
+        (recur
+          (conj vs curr)
+          (store-conj (store-rest store) new-neighbors))
+        vs))))
 
 (comment
-  (print-graph test-graph1 (stack))
-
+  (:list (print-graph test-graph1 (stack)))
   )
 
 
