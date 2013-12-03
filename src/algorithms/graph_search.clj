@@ -42,8 +42,8 @@
    12 [9]})
 
 (defn find-path
-  "Finds a path (any path) from the start to the end in the graph. Returns nil
-  if there is no path."
+  "Finds a path (any path) from the start to the end in the graph by doing
+  breadth-first search. Returns nil if there is no path."
   [start end graph]
   (loop [path [start]
          visited #{start}
@@ -69,15 +69,15 @@
          visited #{}
          graph graph]
     (when-let [curr-path (first path-queue)]
-      (let [curr-node (first curr-path)
-            adjs (filter (comp not visited) (graph curr-node))]
-        (if (= end curr-node)
+      (let [curr (first curr-path)
+            adjs (filter (comp not visited) (graph curr))]
+        (if (= end curr)
           (reverse curr-path)
           (let [subq (subvec path-queue 1)]
             (if (empty? adjs)
               (recur subq visited graph)
               (recur (apply conj subq (map #(cons % curr-path) adjs))
-                     (conj visited curr-node)
+                     (conj visited curr)
                      graph))))))))
 
 ;; http://gist.io/7375570
@@ -106,19 +106,12 @@
     (let [curr (store-peek store)
           neighbors (graph curr)
           new-neighbors (filter (fn [n] (not (some #{n} (:list store)))) neighbors)]
-      (println curr)
       (if (not (empty? neighbors))
-        (recur
-          (conj vs curr)
-          (store-conj (store-rest store) new-neighbors))
+        (recur (conj vs curr)
+               (store-conj (store-rest store) new-neighbors))
         vs))))
 
-(comment
-  (:list (print-graph test-graph1 (stack)))
-  )
-
-
-
+(print-graph test-graph1 (stack))
 
 (comment
   (find-shortest-path 1 10 test-graph1)
