@@ -85,13 +85,13 @@
 (defprotocol IStore
   (store-rest [store])
   (store-peek [store])
-  (store-conj [store & values]))
+  (store-conj [store v]))
 
 (defrecord StackStore [list]
   IStore
   (store-rest [store] (->StackStore (rest (:list store))))
   (store-peek [store] (peek (:list store)))
-  (store-conj [store & values] (->StackStore (apply conj (:list store) values))))
+  (store-conj [store v] (->StackStore (conj (:list store) v))))
 
 (defn stack
   [& vs]
