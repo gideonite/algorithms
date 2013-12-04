@@ -85,33 +85,43 @@
 (defprotocol IStore
   (store-rest [store])
   (store-peek [store])
-  (store-conj [store v]))
+  (store-conj [store v])
+  (store-empty? [store]))
 
 (defrecord StackStore [list]
   IStore
   (store-rest [store] (->StackStore (rest (:list store))))
   (store-peek [store] (peek (:list store)))
-  (store-conj [store v] (->StackStore (conj (:list store) v))))
+  (store-conj [store v] (->StackStore (conj (:list store) v)))
+  (store-empty? [store] (empty? (:list store))))
 
 (defn stack
   [& vs]
   (->StackStore vs))
+
+(defn store-conj-all
+  [store vs]
+  (if (empty? vs)
+    store
+    (store-conj-all (store-conj store (first vs)) (rest vs))))
 
 (defn print-graph
   "A graph is a map of vertices, i.e. an int to a (list of vertices). The store
   implements IStore."
   [graph store]
   (loop [vs '()
-         store (store-conj store (key (first graph)))]
+         store (store-conj store (first (keys graph)))]
     (let [curr (store-peek store)
-          neighbors (graph curr)
-          new-neighbors (filter (fn [n] (not (some #{n} (:list store)))) neighbors)]
-      (if (not (empty? neighbors))
+          neighbors (filter #(and (not= % (first vs))
+                                  (not= % curr))
+                            (graph curr))]
+      (if (store-empty? store)
+        vs
         (recur (conj vs curr)
-               (store-conj (store-rest store) new-neighbors))
-        vs))))
+               (store-conj-all (store-rest store) (reverse neighbors)))))))
 
-(print-graph test-graph1 (stack))
+(defn -main [& args]
+  (print-graph test-graph1 (stack)))
 
 (comment
   (find-shortest-path 1 10 test-graph1)
