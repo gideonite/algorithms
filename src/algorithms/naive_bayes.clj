@@ -3,8 +3,8 @@
 
 (def house-votes "resources/house-votes-84.data")
 (def all-data (map #(s/split % #",") (s/split (slurp house-votes) #"\n")))
-
-(def training-data (take 100 all-data))
+(def training-data (take 300 all-data))
+(def test-data (drop 300 all-data))
 
 (defn column
   [n data]
@@ -71,8 +71,8 @@
   (map #(naive-bayes % training-data) all-data)
   (naive-bayes (nth all-training-data 0) data)
 
-  (let [predictions (map #(naive-bayes % training-data) (drop 100 all-data))
-        truth (drop 100 (column 0 all-data))]
+  (let [predictions (map #(naive-bayes % training-data) test-data)
+        truth (column 0 test-data)]
     (count
       (filter #(not= (first %) (second %))
               (zip predictions truth)))))
