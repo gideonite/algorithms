@@ -1,14 +1,20 @@
 (ns algorithms.naive_bayes
-  (:require [clojure.string :only [split] :as s]))
+  (:require [clojure.string :only [split] :as s]
+            [clojure.math.numeric-tower :as math]))
 
 (def house-votes "resources/house-votes-84.data")
 (def all-data (map #(s/split % #",") (s/split (slurp house-votes) #"\n")))
-(def training-data (take 300 all-data))
-(def test-data (drop 300 all-data))
+(def n (count all-data))
 
-(defn column
-  [n data]
-  (map #(nth % n) data))
+(defn split-data
+  [data]
+  (let [shuffled (shuffle all-data)
+        offset (math/round (* 0.2 n))]
+    [(take offset shuffled) (drop offset shuffled)]))
+
+(def column
+  (memoize (fn [n data]   ;; TODO this is bad because the entire data set is going to get stuck in the memoization.
+             (map #(nth % n) data))))
 
 (defn zip
   [l1 l2]
@@ -58,8 +64,8 @@
   (let [Z (for [i (range 1 (count datum))]
             (filter-by-a
               (nth datum i)
-              (a|b (column i data) (column 0 data))))
-        P-of-C (distribution (column 0 data))
+              (a|b (column i training-data) (column 0 training-data))))
+        P-of-C (distribution (column 0 training-data))
         foo (cons P-of-C Z)
         p-democrat (reduce * (filter (comp not nil?) (map #(get % "democrat") foo)))
         p-republican (reduce * (filter (comp not nil?) (map #(get % "republican") foo)))]
@@ -67,10 +73,9 @@
       "republican"
       "democrat")))
 
-(comment
-  (map #(naive-bayes % training-data) all-data)
-  (naive-bayes (nth all-training-data 0) data)
+(def iterations 100)
 
+(for [i (range iterations)]
   (let [predictions (map #(naive-bayes % training-data) test-data)
         truth (column 0 test-data)]
     (count
