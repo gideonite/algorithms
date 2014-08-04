@@ -10,9 +10,11 @@
 ;;
 ;; Represent an empty location in the backing array as `[nil nil]`.
 
-(def hashnil (gensym "gideonhashmap"))
+(def the-empty-map (into [] (repeat 8 nil)))
 
-(def the-empty-map (into [] (repeat 8 [hashnil hashnil])))
+(defn- hash-index
+  [hmap k]
+  (mod (hash k) (count hmap)))
 
 (defn- dump
   [hmap k v]
@@ -24,13 +26,27 @@
 
 (defn- lookup
   [hmap k]
-  (hmap (mod (hash k) (count hmap))))
+  (hmap (hash-index hmap k)))
 
 (defn resize
   [hmap]
   hmap)
 
 (defn hash-put
+  [hmap k v]
+  (if-let [[currkey currvalue] (lookup hmap k)]
+    [:hit! hmap]
+    (assoc hmap (hash-index hmap k) v)
+    ))
+
+(def hello-world (hash-put the-empty-map "hello" "world"))
+
+(hash-put hello-world "hello" "world")
+
+
+the-empty-map
+
+#_(defn hash-put
   "Open addressing means that to resolve collisions you
   iterate through the backing store until you find an empty spot."
   [hmap k v]
@@ -44,5 +60,4 @@
           (hash-put (resize hmap) k v)
           (assoc hmap (first index-value) v))))))
 
-(def my-hash-map the-empty-map)
 ;; TODO overwrite the default print method to print non nil key-value pairs.
