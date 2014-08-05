@@ -1,4 +1,4 @@
-(ns algorithms.hash_map)
+(ns algorithms.my_hash_map)
 
 ;; A hash map provides the following basic interface:
 ;; - get O(1)
@@ -21,8 +21,11 @@
   (assoc hmap (mod (hash k) (count hmap)) [k v]))
 
 (defn find-first
-  [pred coll]
-  (first (filter pred coll)))
+  [v coll]
+  (first (filter #(= v (second %)) (map-indexed vector coll))))
+
+(find-first nil [1 2 3 nil 4])
+(find-first nil [1 2 3 4 5])
 
 (defn- lookup
   [hmap k]
@@ -35,29 +38,23 @@
 (defn hash-put
   [hmap k v]
   (if-let [[currkey currvalue] (lookup hmap k)]
-    [:hit! hmap]
-    (assoc hmap (hash-index hmap k) v)
-    ))
+    (if (= currkey k)
+      (assoc hmap (hash-index hmap k) [k v])
+      (if-let [[index nil-value] (find-first nil (drop (inc (.indexOf hmap [currkey currvalue]))
+                                                     hmap))]
+      (assoc hmap index [k v])
+      (if-let [[index nil-value] (find-first nil hmap)]
+        (assoc hmap index [k v])
+        (hash-put (resize hmap) k v))))
+    (assoc hmap (hash-index hmap k) [k v])))
 
 (def hello-world (hash-put the-empty-map "hello" "world"))
 
-(hash-put hello-world "hello" "world")
+hello-world
+(hash-put hello-world "hello" "you")
+(hash-put hello-world "b" "you")
 
-
-the-empty-map
-
-#_(defn hash-put
-  "Open addressing means that to resolve collisions you
-  iterate through the backing store until you find an empty spot."
-  [hmap k v]
-  (let [[curr-key curr-value] (lookup hmap k)]
-    (if (= curr-key k)
-      (dump hmap k v)
-      ;; seek an empty spot
-      (let [index-value (find-first #(= hashnil (first %))
-                                  (drop (mod (hash k) (count hmap)) hmap))]
-        (if (nil? index-value)
-          (hash-put (resize hmap) k v)
-          (assoc hmap (first index-value) v))))))
+(def ahashmap [nil nil ["a" "b"] nil nil nil nil])
+(drop (inc (.indexOf ahashmap ["a" "b"])) ahashmap)
 
 ;; TODO overwrite the default print method to print non nil key-value pairs.
