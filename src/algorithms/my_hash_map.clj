@@ -31,6 +31,7 @@
   [hmap k]
   (hmap (hash-index hmap k)))
 
+(declare hash-put)
 (defn resize
   [hmap]
   hmap)
@@ -41,20 +42,11 @@
     (if (= currkey k)
       (assoc hmap (hash-index hmap k) [k v])
       (if-let [[index nil-value] (find-first nil (drop (inc (.indexOf hmap [currkey currvalue]))
-                                                     hmap))]
+                                                       hmap))]
       (assoc hmap index [k v])
       (if-let [[index nil-value] (find-first nil hmap)]
         (assoc hmap index [k v])
         (hash-put (resize hmap) k v))))
     (assoc hmap (hash-index hmap k) [k v])))
-
-(def hello-world (hash-put the-empty-map "hello" "world"))
-
-hello-world
-(hash-put hello-world "hello" "you")
-(hash-put hello-world "b" "you")
-
-(def ahashmap [nil nil ["a" "b"] nil nil nil nil])
-(drop (inc (.indexOf ahashmap ["a" "b"])) ahashmap)
 
 ;; TODO overwrite the default print method to print non nil key-value pairs.
