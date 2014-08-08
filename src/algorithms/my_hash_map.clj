@@ -24,7 +24,7 @@
   [hmap k v]
   (assoc hmap (mod (hash k) (count hmap)) [k v]))
 
-(defn find-first
+(defn- find-first
   [v coll]
   (first (filter #(= v (second %)) (map-indexed vector coll))))
 
