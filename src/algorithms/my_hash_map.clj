@@ -36,15 +36,11 @@
   (hmap (hash-index hmap k)))
 
 (declare hash-put)
-#_(defn resize
+(defn resize
   [hmap]
-  (loop [ret (nil-map (* 2 (count hmap))) hmap hmap]
-    (while hmap
-      (let [[k v] (first hmap)]
-        (recur (hash-put ret k v) (rest hmap))))))
-
-(reduce (fn [v [next-k next-v]]
-          (hash-put v next-k next-v)) (nil-map (* 2 (count hmap))) hmap)
+  (reduce (fn [v [next-k next-v]]
+            (hash-put v next-k next-v))
+          (nil-map (* 2 (count hmap))) hmap))
 
 (defn resize [hmap] hmap)
 
