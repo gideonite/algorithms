@@ -38,11 +38,9 @@
 (declare hash-put)
 (defn resize
   [hmap]
-  (reduce (fn [v [next-k next-v]]
-            (hash-put v next-k next-v))
-          (nil-map (* 2 (count hmap))) hmap))
-
-(defn resize [hmap] hmap)
+  (reduce (fn [v [next-k next-v]] (hash-put v next-k next-v))
+          (nil-map (* 2 (count hmap)))
+          hmap))
 
 (defn hash-put
   [hmap k v]
@@ -56,5 +54,10 @@
         (assoc hmap index [k v])
         (hash-put (resize hmap) k v))))
     (assoc hmap (hash-index hmap k) [k v])))
+
+(defn hash-get
+  [hmap k]
+  (second
+   (get hmap (hash-index hmap k))))
 
 ;; TODO overwrite the default print method to print non nil key-value pairs.
