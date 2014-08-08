@@ -10,7 +10,11 @@
 ;;
 ;; Represent an empty location in the backing array as `[nil nil]`.
 
-(def the-empty-map (into [] (repeat 8 nil)))
+(defn nil-map
+  [size]
+  (into [] (repeat size nil)))
+
+(def the-empty-map (nil-map 8))
 
 (defn- hash-index
   [hmap k]
@@ -32,9 +36,17 @@
   (hmap (hash-index hmap k)))
 
 (declare hash-put)
-(defn resize
+#_(defn resize
   [hmap]
-  hmap)
+  (loop [ret (nil-map (* 2 (count hmap))) hmap hmap]
+    (while hmap
+      (let [[k v] (first hmap)]
+        (recur (hash-put ret k v) (rest hmap))))))
+
+(reduce (fn [v [next-k next-v]]
+          (hash-put v next-k next-v)) (nil-map (* 2 (count hmap))) hmap)
+
+(defn resize [hmap] hmap)
 
 (defn hash-put
   [hmap k v]
